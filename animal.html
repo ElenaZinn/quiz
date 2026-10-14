@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b12">
+<title>答题测评</title>
+<style>
+/* ===========================================================
+   答题测评模板 · 样式
+   设计目标：手机竖屏优先、结果页适合截图分享
+   =========================================================== */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg1: #0b0b12;
+  --bg2: #16122a;
+  --bg3: #22183a;
+  --card: rgba(255, 255, 255, 0.06);
+  --card-strong: rgba(255, 255, 255, 0.10);
+  --line: rgba(255, 255, 255, 0.14);
+  --text: #ffffff;
+  --muted: rgba(255, 255, 255, 0.62);
+  --faint: rgba(255, 255, 255, 0.36);
+  --grad: linear-gradient(135deg, #7c8cff, #22d3ee 55%, #e879f9);
+  --accent: #8b9cff;
+  --radius: 20px;
+}
+
+html { -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  color: var(--text);
+  background: var(--bg1);
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* 背景光晕 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20%;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(124, 140, 255, .55), transparent 55%),
+    radial-gradient(circle at 82% 24%, rgba(232, 121, 249, .38), transparent 55%),
+    radial-gradient(circle at 40% 88%, rgba(34, 211, 238, .30), transparent 55%),
+    linear-gradient(160deg, var(--bg1), var(--bg2) 55%, var(--bg3));
+  filter: blur(10px);
+  animation: float 24s ease-in-out infinite alternate;
+}
+
+@keyframes float {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(2%, -3%) scale(1.06); }
+  100% { transform: translate(-2%, 3%) scale(1.02); }
+}
+
+#app {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 480px;
+  padding: 22px 18px 40px;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen { animation: fade .32s ease both; }
+@keyframes fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* ---------- 开场 ---------- */
+.hero { text-align: center; padding: 26px 6px 18px; }
+.hero-emoji { font-size: 2.6rem; line-height: 1; margin-bottom: 14px; }
+.hero h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: .5px; }
+.hero .sub { margin-top: 10px; font-size: .86rem; color: var(--muted); }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, .35);
+  padding: 20px;
+}
+
+.intro { margin-top: 8px; }
+
+.hint {
+  font-size: .82rem;
+  color: var(--muted);
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.btn {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 14px;
+  padding: 15px 18px;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform .12s ease, filter .2s ease;
+}
+.btn:active { transform: scale(.975); }
+.btn.primary {
+  background: var(--grad);
+  color: #0b0b12;
+  box-shadow: 0 8px 24px rgba(124, 140, 255, .35);
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  margin-top: 10px;
+  font-weight: 600;
+}
+
+.notice {
+  margin-top: 18px;
+  font-size: .68rem;
+  color: var(--faint);
+  text-align: center;
+  line-height: 1.7;
+}
+
+/* ---------- 答题 ---------- */
+.qhead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 2px 20px;
+}
+.icon {
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  font-family: inherit;
+}
+.icon:disabled { opacity: .25; cursor: default; }
+
+.progress {
+  flex: 1;
+  height: 5px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, .12);
+  overflow: hidden;
+}
+.progress .bar {
+  height: 100%;
+  width: 0;
+  border-radius: 99px;
+  background: var(--grad);
+  transition: width .3s ease;
+}
+.counter {
+  font-size: .74rem;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+  min-width: 44px;
+  text-align: right;
+}
+
+.qcard { animation: slide .3s ease both; }
+@keyframes slide { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
+
+.qtext {
+  font-size: 1.16rem;
+  font-weight: 700;
+  line-height: 1.55;
+  margin-bottom: 20px;
+}
+
+.options { display: flex; flex-direction: column; gap: 10px; }
+
+.opt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: .95rem;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 15px 16px;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: background .16s ease, border-color .16s ease, transform .12s ease;
+}
+.opt:active { transform: scale(.985); }
+.opt .oemoji { font-size: 1.15rem; flex-shrink: 0; }
+.opt .olabel { flex: 1; line-height: 1.5; }
+.opt.selected {
+  background: rgba(139, 156, 255, .22);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+
+/* ---------- 分析中 ---------- */
+.analyzing {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  text-align: center;
+  min-height: 60dvh;
+}
+.spinner {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, .14);
+  border-top-color: var(--accent);
+  animation: spin .9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.analyzing p { color: var(--muted); font-size: .88rem; }
+
+/* ---------- 结果 ---------- */
+.sharedbar {
+  background: rgba(139, 156, 255, .16);
+  border: 1px solid rgba(139, 156, 255, .34);
+  border-radius: 12px;
+  padding: 11px 14px;
+  font-size: .78rem;
+  color: #cfd6ff;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.rcard {
+  background: var(--card-strong);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 26px 22px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 14px 44px rgba(0, 0, 0, .4);
+}
+
+.rtag {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.remoji { font-size: 2.1rem; line-height: 1; }
+.rname {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.rquote {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, .92);
+}
+
+.rsec {
+  margin-top: 18px;
+  font-size: .78rem;
+  color: var(--muted);
+}
+.rsec b {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fff;
+  margin-left: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.rsec-text { margin-top: 6px; font-size: .84rem; color: var(--muted); }
+
+.divider {
+  height: 1px;
+  background: var(--line);
+  margin: 20px 0;
+}
+
+.rline { margin-bottom: 16px; }
+.rline:last-child { margin-bottom: 0; }
+.rlabel {
+  display: inline-block;
+  font-size: .7rem;
+  letter-spacing: 1px;
+  color: var(--faint);
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: 2px 10px;
+  margin-bottom: 8px;
+}
+.rline p { font-size: .9rem; line-height: 1.65; color: rgba(255, 255, 255, .88); }
+.rline.action p { color: #fff; font-weight: 600; }
+
+.actions { margin-top: 20px; }
+
+/* ---------- Toast ---------- */
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 44px;
+  transform: translate(-50%, 12px);
+  background: rgba(20, 20, 32, .94);
+  border: 1px solid var(--line);
+  color: #fff;
+  font-size: .82rem;
+  padding: 11px 20px;
+  border-radius: 99px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s ease, transform .22s ease;
+  z-index: 40;
+  white-space: nowrap;
+}
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+window.DEFAULT_QUIZ = "animal";
+</script>
+<script>
+/* ===========================================================
+   题库：动物塑（你是哪种动物）
+   32 题 = 24 道类型题（12 种动物各出现 8 次）+ 8 道野性指数题
+   =========================================================== */
+window.QUIZZES = window.QUIZZES || {};
+
+window.QUIZZES.animal = {
+  id: 'animal',
+  emoji: '🐾',
+  title: '你的动物塑是什么',
+  subtitle: '32 道题，看看你是哪种动物，以及别人误会了你什么',
+  startHint: '凭第一反应作答，不要想太久',
+  notice: '本测试为娱乐向内容，结果仅供娱乐参考。',
+
+  mainPool: ['cat', 'dog', 'rabbit', 'fox', 'deer', 'bear', 'wolf', 'swan', 'whale', 'hedgehog', 'squirrel', 'owl'],
+
+  secondary: {
+    label: '你的野性指数',
+    sum: ['wild1', 'wild2', 'wild3', 'wild4', 'wild5', 'wild6', 'wild7', 'wild8'],
+    levels: [
+      { min: 21, value: '90%', text: '你几乎是野生的，独处是你的默认状态。' },
+      { min: 15, value: '70%', text: '你敢靠人，但更信自己。' },
+      { min: 9, value: '50%', text: '你在「想被人懂」和「不想被打扰」之间反复横跳。' },
+      { min: 0, value: '30%', text: '你其实很需要人，只是不肯先开口。' }
+    ]
+  },
+
+  questions: [
+    /* ---------- 类型题 1–24 ---------- */
+    {
+      text: '周五晚上，你最想做的事是？',
+      options: [
+        { emoji: '🛋', label: '一个人待着，谁也别来找我', scores: { cat: 2 } },
+        { emoji: '🎉', label: '找朋友，越热闹越好', scores: { dog: 2 } },
+        { emoji: '🛏', label: '待在家，但一直在想要不要出门', scores: { rabbit: 2 } },
+        { emoji: '🍸', label: '看情况，有有意思的人才出去', scores: { fox: 2 } }
+      ]
+    },
+    {
+      text: '有人对你说了很难听的话，你？',
+      options: [
+        { emoji: '🦌', label: '表面没事，回家反复想', scores: { deer: 2 } },
+        { emoji: '🐻', label: '当场不吭声，但我记住了', scores: { bear: 2 } },
+        { emoji: '🐺', label: '当场就回，不讲情面', scores: { wolf: 2 } },
+        { emoji: '🦢', label: '不回应，从心里把这个人删掉', scores: { swan: 2 } }
+      ]
+    },
+    {
+      text: '你难过的时候会？',
+      options: [
+        { emoji: '🐋', label: '一个人待很久，不告诉任何人', scores: { whale: 2 } },
+        { emoji: '🦔', label: '说「没事」，但语气已经不对了', scores: { hedgehog: 2 } },
+        { emoji: '🐿', label: '开始收拾东西、整理房间', scores: { squirrel: 2 } },
+        { emoji: '🦉', label: '半夜想明白了，白天装作想明白了', scores: { owl: 2 } }
+      ]
+    },
+    {
+      text: '你的房间或桌面是？',
+      options: [
+        { emoji: '🐈', label: '我的东西有我的顺序，别人别动', scores: { cat: 2 } },
+        { emoji: '🦌', label: '干净，但总觉得缺个能安心待的角落', scores: { deer: 2 } },
+        { emoji: '🐋', label: '有点乱，但我需要这个乱', scores: { whale: 2 } },
+        { emoji: '🐿', label: '东西很多，每一样都舍不得扔', scores: { squirrel: 2 } }
+      ]
+    },
+    {
+      text: '朋友遇到麻烦，你的第一反应是？',
+      options: [
+        { emoji: '🐕', label: '马上去，能帮的都帮', scores: { dog: 2 } },
+        { emoji: '🐻', label: '先问清楚是谁欺负的', scores: { bear: 2 } },
+        { emoji: '🦔', label: '嘴上说「你活该」，手上已经在帮', scores: { hedgehog: 2 } },
+        { emoji: '🦊', label: '先判断这件事帮了有没有用', scores: { fox: 2 } }
+      ]
+    },
+    {
+      text: '在一个都是陌生人的场合，你会？',
+      options: [
+        { emoji: '🐇', label: '找个角落待着，观察全场', scores: { rabbit: 2 } },
+        { emoji: '🐺', label: '谁有意思就跟谁聊，没意思就走', scores: { wolf: 2 } },
+        { emoji: '🦢', label: '保持礼貌，但不主动', scores: { swan: 2 } },
+        { emoji: '🦉', label: '先看明白这里谁说了算', scores: { owl: 2 } }
+      ]
+    },
+    {
+      text: '你最受不了别人对你做什么？',
+      options: [
+        { emoji: '🐈', label: '一直追问我怎么了', scores: { cat: 2 } },
+        { emoji: '🦢', label: '在别人面前让我难堪', scores: { swan: 2 } },
+        { emoji: '🦔', label: '突然靠近，不给我反应时间', scores: { hedgehog: 2 } },
+        { emoji: '🐕', label: '明明有事却不告诉我', scores: { dog: 2 } }
+      ]
+    },
+    {
+      text: '你在朋友眼里是？',
+      options: [
+        { emoji: '🦊', label: '什么都能聊，但没人真的了解我', scores: { fox: 2 } },
+        { emoji: '🐋', label: '想得很深，但很少说', scores: { whale: 2 } },
+        { emoji: '🦌', label: '温柔，但不太好接近', scores: { deer: 2 } },
+        { emoji: '🐇', label: '好说话，其实很警觉', scores: { rabbit: 2 } }
+      ]
+    },
+    {
+      text: '你做决定的时候？',
+      options: [
+        { emoji: '🐻', label: '慢，但一旦定了就不改', scores: { bear: 2 } },
+        { emoji: '🦉', label: '反复想很久，直到想通', scores: { owl: 2 } },
+        { emoji: '🐿', label: '先想最坏的情况，准备好再说', scores: { squirrel: 2 } },
+        { emoji: '🐺', label: '想好了就直接做，不等别人', scores: { wolf: 2 } }
+      ]
+    },
+    {
+      text: '你珍视的一段关系，通常是什么样？',
+      options: [
+        { emoji: '🐈', label: '保持距离，但一直在', scores: { cat: 2 } },
+        { emoji: '🐺', label: '少而深，不勉强', scores: { wolf: 2 } },
+        { emoji: '🐋', label: '很少见面，但能聊很久', scores: { whale: 2 } },
+        { emoji: '🐻', label: '我护着的人，谁都不能碰', scores: { bear: 2 } }
+      ]
+    },
+    {
+      text: '别人对你好的时候，你？',
+      options: [
+        { emoji: '🐕', label: '会很开心，而且说出来', scores: { dog: 2 } },
+        { emoji: '🐇', label: '会想他是不是有事求我', scores: { rabbit: 2 } },
+        { emoji: '🦌', label: '会记很久，但不知道怎么回', scores: { deer: 2 } },
+        { emoji: '🐿', label: '会加倍还回去', scores: { squirrel: 2 } }
+      ]
+    },
+    {
+      text: '你最不想让别人看到的是？',
+      options: [
+        { emoji: '🦊', label: '我其实很在意别人的看法', scores: { fox: 2 } },
+        { emoji: '🦢', label: '我也需要被认可', scores: { swan: 2 } },
+        { emoji: '🦔', label: '我很容易受伤', scores: { hedgehog: 2 } },
+        { emoji: '🦉', label: '我其实没有那么冷静', scores: { owl: 2 } }
+      ]
+    },
+    {
+      text: '你最怕别人对你说哪句话？',
+      options: [
+        { emoji: '🐈', label: '「我们谈谈」', scores: { cat: 2 } },
+        { emoji: '🐕', label: '「你变了」', scores: { dog: 2 } },
+        { emoji: '🐇', label: '「你怎么不说话」', scores: { rabbit: 2 } },
+        { emoji: '🦊', label: '「我早就看透你了」', scores: { fox: 2 } }
+      ]
+    },
+    {
+      text: '在聊天群里，你的存在感是？',
+      options: [
+        { emoji: '🦌', label: '很少说话，但每条都看', scores: { deer: 2 } },
+        { emoji: '🐻', label: '不常出现，但一开口就有分量', scores: { bear: 2 } },
+        { emoji: '🐺', label: '想说什么就说什么', scores: { wolf: 2 } },
+        { emoji: '🦢', label: '只在必要的时候回', scores: { swan: 2 } }
+      ]
+    },
+    {
+      text: '你手机最舍不得删的是？',
+      options: [
+        { emoji: '🐋', label: '一段很长的聊天记录', scores: { whale: 2 } },
+        { emoji: '🦔', label: '一张别人看不出意义的截图', scores: { hedgehog: 2 } },
+        { emoji: '🐿', label: '一堆「以后可能用得上」的东西', scores: { squirrel: 2 } },
+        { emoji: '🦉', label: '半夜写下的备忘录', scores: { owl: 2 } }
+      ]
+    },
+    {
+      text: '别人误解你的时候，你会？',
+      options: [
+        { emoji: '🐈', label: '懒得解释', scores: { cat: 2 } },
+        { emoji: '🦌', label: '会难受，但不说', scores: { deer: 2 } },
+        { emoji: '🐋', label: '会想很久，最后也没说', scores: { whale: 2 } },
+        { emoji: '🦔', label: '会直接炸一下，然后又后悔', scores: { hedgehog: 2 } }
+      ]
+    },
+    {
+      text: '你答应别人的事，通常？',
+      options: [
+        { emoji: '🐕', label: '一定会做到，做不到会提前说', scores: { dog: 2 } },
+        { emoji: '🐻', label: '答应了就负责到底', scores: { bear: 2 } },
+        { emoji: '🐿', label: '会反复确认自己有没有漏', scores: { squirrel: 2 } },
+        { emoji: '🦉', label: '会先想清楚再答应', scores: { owl: 2 } }
+      ]
+    },
+    {
+      text: '你第一次见一个人，通常在判断什么？',
+      options: [
+        { emoji: '🐇', label: '他是不是安全的人', scores: { rabbit: 2 } },
+        { emoji: '🦊', label: '他想要什么', scores: { fox: 2 } },
+        { emoji: '🐺', label: '他值不值得深交', scores: { wolf: 2 } },
+        { emoji: '🦢', label: '他有没有分寸', scores: { swan: 2 } }
+      ]
+    },
+    {
+      text: '你生气的时候是什么样？',
+      options: [
+        { emoji: '🐈', label: '不说话了', scores: { cat: 2 } },
+        { emoji: '🐻', label: '脸色沉下来，但不吼', scores: { bear: 2 } },
+        { emoji: '🐺', label: '直接说，很难听', scores: { wolf: 2 } },
+        { emoji: '🦉', label: '很平静，但之后就不再理你', scores: { owl: 2 } }
+      ]
+    },
+    {
+      text: '你最难开口说的话是？',
+      options: [
+        { emoji: '🐕', label: '「我需要你」', scores: { dog: 2 } },
+        { emoji: '🦊', label: '「我其实很在乎」', scores: { fox: 2 } },
+        { emoji: '🦌', label: '「我不太好」', scores: { deer: 2 } },
+        { emoji: '🐋', label: '「我一个人不太行」', scores: { whale: 2 } }
+      ]
+    },
+    {
+      text: '你最常有的自我怀疑是？',
+      options: [
+        { emoji: '🐇', label: '我是不是想太多了', scores: { rabbit: 2 } },
+        { emoji: '🦢', label: '我是不是太在意别人怎么看', scores: { swan: 2 } },
+        { emoji: '🦔', label: '我是不是脾气太差', scores: { hedgehog: 2 } },
+        { emoji: '🐿', label: '我是不是准备得还不够', scores: { squirrel: 2 } }
+      ]
+    },
+    {
+      text: '你独处的时候最常做的是？',
+      options: [
+        { emoji: '🐈', label: '什么都不做，就待着', scores: { cat: 2 } },
+        { emoji: '🦊', label: '观察别人发的东西', scores: { fox: 2 } },
+        { emoji: '🦢', label: '整理自己的状态', scores: { swan: 2 } },
+        { emoji: '🐿', label: '收拾、整理、规划', scores: { squirrel: 2 } }
+      ]
+    },
+    {
+      text: '有人在你面前哭，你会？',
+      options: [
+        { emoji: '🐕', label: '立刻过去抱住他', scores: { dog: 2 } },
+        { emoji: '🐇', label: '慌，站在旁边不知道做什么', scores: { rabbit: 2 } },
+        { emoji: '🐻', label: '坐下，等他说', scores: { bear: 2 } },
+        { emoji: '🦔', label: '嘴上说「哭什么」，手里递纸巾', scores: { hedgehog: 2 } }
+      ]
+    },
+    {
+      text: '你最想要别人给你的是什么？',
+      options: [
+        { emoji: '🦌', label: '安全感', scores: { deer: 2 } },
+        { emoji: '🐺', label: '尊重', scores: { wolf: 2 } },
+        { emoji: '🐋', label: '理解', scores: { whale: 2 } },
+        { emoji: '🦉', label: '空间', scores: { owl: 2 } }
+      ]
+    },
+
+    /* ---------- 野性指数题 1–8 ---------- */
+    {
+      text: '有人一整天没回你消息，你会？',
+      options: [
+        { emoji: '😌', label: '完全不在意，本来也不急', scores: { wild1: 3 } },
+        { emoji: '🤔', label: '会想一下，但不问', scores: { wild1: 2 } },
+        { emoji: '💬', label: '会去问一句', scores: { wild1: 1 } },
+        { emoji: '📱', label: '会反复看手机', scores: { wild1: 0 } }
+      ]
+    },
+    {
+      text: '有人靠得离你太近，你？',
+      options: [
+        { emoji: '↩️', label: '下意识后退半步', scores: { wild2: 3 } },
+        { emoji: '😐', label: '不自在，但忍着', scores: { wild2: 2 } },
+        { emoji: '🙂', label: '没什么感觉', scores: { wild2: 1 } },
+        { emoji: '🥰', label: '挺喜欢的', scores: { wild2: 0 } }
+      ]
+    },
+    {
+      text: '一个人待一整天，你？',
+      options: [
+        { emoji: '🏝', label: '太好了，还嫌不够', scores: { wild3: 3 } },
+        { emoji: '🌙', label: '舒服，但晚上想找人说说话', scores: { wild3: 2 } },
+        { emoji: '😕', label: '有点闷', scores: { wild3: 1 } },
+        { emoji: '😣', label: '会难受', scores: { wild3: 0 } }
+      ]
+    },
+    {
+      text: '有人临时说要来找你，你会？',
+      options: [
+        { emoji: '😬', label: '会有点烦躁，希望他提前说', scores: { wild4: 3 } },
+        { emoji: '😐', label: '可以，但最好别太久', scores: { wild4: 2 } },
+        { emoji: '🙂', label: '欢迎', scores: { wild4: 1 } },
+        { emoji: '🥳', label: '太好了', scores: { wild4: 0 } }
+      ]
+    },
+    {
+      text: '你更愿意一个人吃饭还是和人一起？',
+      options: [
+        { emoji: '🍜', label: '一个人，安静', scores: { wild5: 3 } },
+        { emoji: '🍱', label: '看情况', scores: { wild5: 2 } },
+        { emoji: '🍲', label: '有人一起更好', scores: { wild5: 1 } },
+        { emoji: '👨‍👩‍👧', label: '一定要有人', scores: { wild5: 0 } }
+      ]
+    },
+    {
+      text: '手机静音一整天，你？',
+      options: [
+        { emoji: '😌', label: '完全没问题', scores: { wild6: 3 } },
+        { emoji: '🙂', label: '还行', scores: { wild6: 2 } },
+        { emoji: '😟', label: '会有点慌', scores: { wild6: 1 } },
+        { emoji: '😰', label: '受不了', scores: { wild6: 0 } }
+      ]
+    },
+    {
+      text: '你理想的社交频率是？',
+      options: [
+        { emoji: '🗓', label: '一个月一两次就够', scores: { wild7: 3 } },
+        { emoji: '📅', label: '一周一次', scores: { wild7: 2 } },
+        { emoji: '📆', label: '一周好几次', scores: { wild7: 1 } },
+        { emoji: '☀️', label: '每天都要有人', scores: { wild7: 0 } }
+      ]
+    },
+    {
+      text: '别人问你「你最近怎么样」，你会？',
+      options: [
+        { emoji: '🫥', label: '说「还行」，然后没了', scores: { wild8: 3 } },
+        { emoji: '🙂', label: '简单说两句', scores: { wild8: 2 } },
+        { emoji: '📖', label: '会讲挺细', scores: { wild8: 1 } },
+        { emoji: '🗣', label: '会讲很久', scores: { wild8: 0 } }
+      ]
+    }
+  ],
+
+  /* ---------- 12 种动物 ---------- */
+  results: {
+    cat: {
+      emoji: '🐈', name: '猫',
+      quote: '你不难懂，你只是不想被一直懂。',
+      other: '独立、有点冷、不太好接近。',
+      hidden: '你不是不需要人，你只是需要在你想靠近的时候，对方刚好在。',
+      action: '偶尔先开口一次，不会掉价的。'
+    },
+    dog: {
+      emoji: '🐕', name: '狗',
+      quote: '你的热情是真的，但你的热情需要回应。',
+      other: '热情、好脾气、有点粘人。',
+      hidden: '你不是没有界限，你是一次次选择不设界限，因为你怕失去。',
+      action: '试着先说一次「我今天不太想」，你会轻松很多。'
+    },
+    rabbit: {
+      emoji: '🐇', name: '兔',
+      quote: '你什么都知道，只是不肯先动。',
+      other: '好说话、温柔、没什么脾气。',
+      hidden: '你不是没有想法，你是把每一句话都在心里预演了三遍。',
+      action: '少想一秒，先说出口，你会发现没人笑你。'
+    },
+    fox: {
+      emoji: '🦊', name: '狐',
+      quote: '你不是会社交，你是会读人。',
+      other: '什么都能聊、聪明、有点看不透。',
+      hidden: '你比谁都想过一段不用算计的关系，只是你不敢先卸下来。',
+      action: '找一个不需要你表现的人，待久一点。'
+    },
+    deer: {
+      emoji: '🦌', name: '鹿',
+      quote: '你要的从来不是热闹，是安全感。',
+      other: '温柔、安静、好像随时会走。',
+      hidden: '你不是冷，你是被吓过太多次，才学会了先退半步。',
+      action: '试着在一个地方待久一点，你会发现自己没那么怕。'
+    },
+    bear: {
+      emoji: '🐻', name: '熊',
+      quote: '你护短，护得不讲道理。',
+      other: '慢热、可靠、有点闷。',
+      hidden: '你之所以护别人护得那么狠，是因为从来没有人这样护过你。',
+      action: '也允许别人护你一次。'
+    },
+    wolf: {
+      emoji: '🐺', name: '狼',
+      quote: '你不是不合群，你是不想凑合。',
+      other: '有原则、不太好惹、说走就走。',
+      hidden: '你的狠话底下，是你对「将就」这件事的极度害怕。',
+      action: '你的标准很贵，但别把它用在所有人身上。'
+    },
+    swan: {
+      emoji: '🦢', name: '天鹅',
+      quote: '你的清高不是优越，是自保。',
+      other: '有距离感、体面、不太合群。',
+      hidden: '你早就想加入，只是你受不了一次被冷落。',
+      action: '允许自己有一次不好看的时候。'
+    },
+    whale: {
+      emoji: '🐋', name: '鲸',
+      quote: '你习惯了很深地活着，也很深地孤独。',
+      other: '想得多、安静、好像有心事。',
+      hidden: '你不是不想说，是你试过几次，发现没人接得住。',
+      action: '把最深的那个想法，说给一个人听，就一个。'
+    },
+    hedgehog: {
+      emoji: '🦔', name: '刺猬',
+      quote: '你不是脾气不好，你是怕被碰到里面。',
+      other: '嘴硬、容易炸、其实好哄。',
+      hidden: '你所有的刺都是朝外的，最软的地方一直没设防。',
+      action: '下次炸完，试着告诉对方「我刚才其实是怕了」。'
+    },
+    squirrel: {
+      emoji: '🐿', name: '松鼠',
+      quote: '你囤的不是东西，是安全感。',
+      other: '爱存东西、想得多、有点焦虑。',
+      hidden: '你不是舍不得扔，你是怕有一天需要的时候，自己没有。',
+      action: '这周扔掉一样东西，你会发现自己还在。'
+    },
+    owl: {
+      emoji: '🦉', name: '猫头鹰',
+      quote: '你在别人睡着的时候才真正醒着。',
+      other: '冷静、慢、不太好接近。',
+      hidden: '你不是不情绪化，你只是把情绪都留给了深夜。',
+      action: '别只在半夜想明白，也试着白天说出来。'
+    }
+  }
+};
+
+</script>
+<script>
+/* ===========================================================
+   答题测评模板 · 引擎
+   题库与引擎完全分离：换一个题库文件就是一款新测评。
+
+   题库数据结构见 quizzes/talent.js
+   =========================================================== */
+(function () {
+  'use strict';
+
+  var app = document.getElementById('app');
+  var params = new URLSearchParams(location.search);
+
+  var state = { quiz: null, idx: 0, picks: [] };
+
+  /* ---------- 工具 ---------- */
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function toast(msg) {
+    var t = document.getElementById('toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'toast';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function () { t.classList.remove('show'); }, 2000);
+  }
+
+  function copyText(text, msg) {
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); toast(msg); }
+      catch (e) { toast('复制失败，请长按手动复制'); }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { toast(msg); }, fallback);
+    } else { fallback(); }
+  }
+
+  /* ---------- 题库选择 ---------- */
+  function resolveQuiz() {
+    var quizzes = window.QUIZZES || {};
+    var id = params.get('q') || window.DEFAULT_QUIZ;
+    if (id && quizzes[id]) return quizzes[id];
+    var keys = Object.keys(quizzes);
+    return keys.length ? quizzes[keys[0]] : null;
+  }
+
+  /* ---------- 计分 ---------- */
+  function totalsOf(quiz) {
+    var totals = {};
+    (quiz.mainPool || []).forEach(function (k) { totals[k] = 0; });
+    state.picks.forEach(function (p, i) {
+      if (p == null) return;
+      var opt = quiz.questions[i].options[p];
+      var s = opt.scores || {};
+      Object.keys(s).forEach(function (k) { totals[k] = (totals[k] || 0) + s[k]; });
+    });
+    return totals;
+  }
+
+  function calcMain(quiz) {
+    var totals = totalsOf(quiz);
+    var pool = quiz.mainPool || [];
+    var best = pool[0];
+    pool.forEach(function (k) {
+      if ((totals[k] || 0) > (totals[best] || 0)) best = k;
+    });
+    return best;
+  }
+
+  function calcSecondary(quiz) {
+    var sec = quiz.secondary;
+    if (!sec) return null;
+    var sum = 0;
+    state.picks.forEach(function (p, i) {
+      if (p == null) return;
+      var s = quiz.questions[i].options[p].scores || {};
+      sec.sum.forEach(function (k) { sum += (s[k] || 0); });
+    });
+    var levels = sec.levels;
+    for (var i = 0; i < levels.length; i++) {
+      if (sum >= levels[i].min) {
+        return { index: i, text: levels[i].text, value: levels[i].value };
+      }
+    }
+    var last = levels.length - 1;
+    return { index: last, text: levels[last].text, value: levels[last].value };
+  }
+
+  /* ---------- 开场 ---------- */
+  function renderStart() {
+    var q = state.quiz;
+    document.title = q.title;
+    app.innerHTML =
+      '<div class="screen">' +
+        '<div class="hero">' +
+          '<div class="hero-emoji">' + esc(q.emoji || '✨') + '</div>' +
+          '<h1>' + esc(q.title) + '</h1>' +
+          '<p class="sub">' + esc(q.subtitle || '') + '</p>' +
+        '</div>' +
+        '<div class="card intro">' +
+          (q.startHint ? '<div class="hint">💡 ' + esc(q.startHint) + '</div>' : '') +
+          '<button class="btn primary" id="btnStart">开始测试</button>' +
+        '</div>' +
+        (q.notice ? '<p class="notice">' + esc(q.notice) + '</p>' : '') +
+      '</div>';
+
+    document.getElementById('btnStart').addEventListener('click', function () {
+      state.idx = 0;
+      renderQuiz();
+    });
+  }
+
+  /* ---------- 答题 ---------- */
+  function renderQuiz() {
+    var q = state.quiz;
+    var total = q.questions.length;
+    var item = q.questions[state.idx];
+    var picked = state.picks[state.idx];
+    var pct = Math.round((state.idx / total) * 100);
+
+    var optsHtml = item.options.map(function (o, i) {
+      return '<button class="opt' + (picked === i ? ' selected' : '') + '" data-i="' + i + '">' +
+        (o.emoji ? '<span class="oemoji">' + esc(o.emoji) + '</span>' : '') +
+        '<span class="olabel">' + esc(o.label) + '</span>' +
+      '</button>';
+    }).join('');
+
+    app.innerHTML =
+      '<div class="screen">' +
+        '<div class="qhead">' +
+          '<button class="icon" id="btnBack"' + (state.idx === 0 ? ' disabled' : '') + '>‹</button>' +
+          '<div class="progress"><div class="bar" style="width:' + pct + '%"></div></div>' +
+          '<div class="counter">' + (state.idx + 1) + '/' + total + '</div>' +
+        '</div>' +
+        '<div class="qcard">' +
+          '<div class="qtext">' + esc(item.text) + '</div>' +
+          '<div class="options">' + optsHtml + '</div>' +
+        '</div>' +
+      '</div>';
+
+    var back = document.getElementById('btnBack');
+    back.addEventListener('click', function () {
+      if (state.idx > 0) { state.idx--; renderQuiz(); }
+    });
+
+    Array.prototype.forEach.call(app.querySelectorAll('.opt'), function (el) {
+      el.addEventListener('click', function () {
+        var i = Number(el.dataset.i);
+        state.picks[state.idx] = i;
+        Array.prototype.forEach.call(app.querySelectorAll('.opt'), function (x) {
+          x.classList.toggle('selected', x === el);
+        });
+        setTimeout(function () {
+          if (state.idx < total - 1) { state.idx++; renderQuiz(); }
+          else { renderAnalyzing(); }
+        }, 260);
+      });
+    });
+  }
+
+  /* ---------- 分析中 ---------- */
+  function renderAnalyzing() {
+    var texts = [
+      '正在读取你的答案…',
+      '正在比对你的习惯…',
+      '正在生成你的专属结果…'
+    ];
+    app.innerHTML =
+      '<div class="screen analyzing">' +
+        '<div class="spinner"></div>' +
+        '<p id="atxt">' + texts[0] + '</p>' +
+      '</div>';
+    var i = 0;
+    var timer = setInterval(function () {
+      i++;
+      var el = document.getElementById('atxt');
+      if (el && texts[i]) el.textContent = texts[i];
+      if (i >= texts.length) clearInterval(timer);
+    }, 520);
+    setTimeout(function () { clearInterval(timer); showResult(); }, 1500);
+  }
+
+  /* ---------- 结果 ---------- */
+  function resultHTML(quiz, mainKey, sec, isShared) {
+    var r = quiz.results[mainKey];
+    var primaryLabel = quiz.secondary && quiz.secondary.label
+      ? quiz.secondary.label : '';
+    var html = '';
+
+    if (isShared) {
+      html += '<div class="sharedbar">这是好友分享的结果 · 往下滑可以自己测一遍</div>';
+    }
+
+    html +=
+      '<div class="rcard">' +
+        '<div class="rtag">' +
+          '<span class="remoji">' + esc(r.emoji) + '</span>' +
+          '<span class="rname">' + esc(r.name) + '</span>' +
+        '</div>' +
+        '<div class="rquote">「' + esc(r.quote) + '」</div>';
+
+    if (sec) {
+      html +=
+        '<div class="rsec">' + esc(primaryLabel) + '<b>' + esc(sec.value) + '</b></div>' +
+        '<div class="rsec-text">' + esc(sec.text) + '</div>';
+    }
+
+    html += '<div class="divider"></div>';
+
+    if (r.other) {
+      html += '<div class="rline"><span class="rlabel">别人眼中的你</span><p>' + esc(r.other) + '</p></div>';
+    }
+    if (r.hidden) {
+      html += '<div class="rline"><span class="rlabel">你自己不知道的你</span><p>' + esc(r.hidden) + '</p></div>';
+    }
+    if (r.action) {
+      html += '<div class="rline action"><span class="rlabel">一句话</span><p>' + esc(r.action) + '</p></div>';
+    }
+    html += '</div>';
+
+    html +=
+      '<div class="actions">' +
+        '<button class="btn primary" id="btnShare">' + (isShared ? '我也要测' : '复制分享链接') + '</button>' +
+        (isShared ? '' : '<button class="btn ghost" id="btnRetry">再测一次</button>') +
+      '</div>';
+
+    if (quiz.notice) html += '<p class="notice">' + esc(quiz.notice) + '</p>';
+    return html;
+  }
+
+  function bindResult(quiz, mainKey, sec, isShared) {
+    var share = document.getElementById('btnShare');
+    if (share) {
+      share.addEventListener('click', function () {
+        if (isShared) { restart(quiz); return; }
+        var url = location.origin + location.pathname +
+          '?q=' + encodeURIComponent(quiz.id) +
+          '&m=' + encodeURIComponent(mainKey) +
+          (sec ? '&s=' + sec.index : '');
+        var text = '「' + quiz.title + '」我的结果是：' + quiz.results[mainKey].name + '\n' + url;
+        if (navigator.share) {
+          navigator.share({ title: quiz.title, text: quiz.results[mainKey].name, url: url })
+            .catch(function () { copyText(text, '已复制，去分享给朋友吧'); });
+        } else {
+          copyText(text, '已复制，去分享给朋友吧');
+        }
+      });
+    }
+    var retry = document.getElementById('btnRetry');
+    if (retry) {
+      retry.addEventListener('click', function () { restart(quiz); });
+    }
+  }
+
+  function showResult() {
+    var quiz = state.quiz;
+    var mainKey = calcMain(quiz);
+    var sec = calcSecondary(quiz);
+    app.innerHTML = '<div class="screen result">' + resultHTML(quiz, mainKey, sec, false) + '</div>';
+    bindResult(quiz, mainKey, sec, false);
+    window.scrollTo(0, 0);
+  }
+
+  function showSharedResult(quiz, mainKey, secIndex) {
+    var sec = null;
+    if (quiz.secondary && secIndex != null && quiz.secondary.levels[secIndex]) {
+      var lv = quiz.secondary.levels[secIndex];
+      sec = { index: secIndex, text: lv.text, value: lv.value };
+    }
+    app.innerHTML = '<div class="screen result">' + resultHTML(quiz, mainKey, sec, true) + '</div>';
+    bindResult(quiz, mainKey, sec, true);
+  }
+
+  function restart(quiz) {
+    state.picks = [];
+    state.idx = 0;
+    history.replaceState(null, '', location.pathname + (quiz.id ? '?q=' + quiz.id : ''));
+    renderStart();
+  }
+
+  /* ---------- 启动 ---------- */
+  function boot() {
+    var quiz = resolveQuiz();
+    if (!quiz) {
+      app.innerHTML = '<div class="screen"><div class="card">没有找到题库。</div></div>';
+      return;
+    }
+    state.quiz = quiz;
+    state.picks = new Array(quiz.questions.length).fill(null);
+
+    var m = params.get('m');
+    var s = params.get('s');
+    if (m && quiz.results[m]) {
+      document.title = quiz.title;
+      showSharedResult(quiz, m, s == null ? null : Number(s));
+    } else {
+      renderStart();
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+
+</script>
+</body>
+</html>
